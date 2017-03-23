@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+</head>
+<body bgcolor="#FFFFAA">
+
+    <script language="javascript">
+
+        
+
+        //Olika frågor (den här borde läsas från datadas)
+        var questionArray = [
+          ["<h3>Det borde inte vara arbetsförmedlingens uppgift att hitta jobb åt arbetssökande</h3>", "Håller med", "Håller inte med", "Avstår"],
+          ["<h3>Solariesolning för personer under 18 år bör förbjudas</h3>", "Håller med", "Håller inte med", "Avstår"],
+          ["<h3>Det borde vara förbjudet att maskera sig vid idrottsarrangemang</h3>", "Håller med", "Håller inte med", "Avstår"],
+          ["<h3>Åldersgränsen för att få delta i sprututbytesverksamheten borde sänkas från 20 år till 18 år</h3>", "Håller med", "Håller inte med", "Avstår"],
+          ["<h3>Sverige borde även under 2017 delta i Natos utbildnings- och rådgivningsinsats, RSM, i Afghanistan</h3>", "Håller med", "Håller inte med", "Avstår"],
+          ["<h3>Användandet av falska polisbilar borde kriminaliseras</h3>", "Håller med", "Håller inte med", "Avstår"],
+          ["<h3>Klimatavtalet från Paris borde godkännas</h3>", "Håller med", "Håller inte med", "Avstår"]
+        ];
+
+        //Hur partierna förhåller sig (1 = ja, -1 = nej)
+        //S, M, SD, MP, C, V, L, KD
+        var keyArray = [
+          [-1, 1, 1, -1, 1, -1, 1, 1],
+          [1, -1, 0, 1, -1, 1, -1, 1],
+          [1, 1, 1, 1, 1, -1, 1, 1],
+          [1, -1, 1, 1, 1, 1, 1, 1],
+          [1, 1, -1, 1, 1, -1, 1, 1],
+          [-1, 1, 1, -1, 1, -1, 1, 1],
+          [1, 1, -1, 1, 1, 1, 1, 1]
+        ];
+
+        var previousQ = [];
+        var nrofQ = 7;   //ANTAL FRÅGOR 
+        //Skriv ut frågor -> 
+        for (var i = 0; i < nrofQ; i++) {
+            var slumptal;
+            //Slumpa fram olika frågor.
+            slumptal = Math.floor((Math.random() * questionArray.length)); //Random 0-length of array
+            
+            while (previousQ.indexOf(slumptal) > -1) {
+                slumptal = Math.floor((Math.random() * nrofQ));
+            }
+
+            previousQ[i] = slumptal;
+
+            document.write("<center><form><span class='question'>" + questionArray[slumptal][0] + "</span><br>");
+            for (var x = 1; x < 4; x++) {
+                document.write("<input type='radio' class='answer' name='answer' value='" + questionArray[slumptal][x] + "'>" + questionArray[slumptal][x] + "");
+
+            }
+            document.write("</form></center><br>");
+        }
+
+
+        //Lyssna efter klick
+        var inputs = document.getElementsByTagName('input');
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].addEventListener('click', check);
+        }
+
+
+
+        var userAnswers = [];
+
+        //Se vad personen svarat
+        function check() {
+
+            userAnswers = [];
+            var c = 0;
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].checked) {
+                    userAnswers.push(i % 3);
+                    c++;
+                }
+            }
+            if (c == nrofQ) rate();
+        }
+
+
+        var userParty = [0, 0, 0, 0, 0, 0, 0, 0];
+        //Summera svaren
+        function rate() {
+            userParty = [0, 0, 0, 0, 0, 0, 0, 0];
+            console.log(userAnswers);
+            for (var i = 0; i < userAnswers.length; i++) {
+                if (userAnswers[i] == '0') {
+                    for (var j = 0; j < 8; j++) { //8 is the number of parties
+                        if (keyArray[previousQ[i]][j] == '1') {
+                            userParty[j] = userParty[j] + keyArray[previousQ[i]][j];
+                        }
+                    }
+                }
+                else if (userAnswers[i] == '1') {
+                    for (var j = 0; j < 8; j++) { //8 = nr of parties
+                        if (keyArray[previousQ[i]][j] == '-1') {
+                            userParty[j] = userParty[j] - keyArray[previousQ[i]][j];
+                        }
+                    }
+                }
+            }
+            console.log(userParty);
+            answer();
+        }
+
+
+        function answer() {
+            var q = 0;
+            var multParty = [];
+            multParty.push(q);
+            var i;
+            for (i = 1; i < 8; i++) {
+                if (userParty[i] > userParty[q]) {
+                    multParty = [];
+                    q = i;
+                    multParty.push(q);
+                }
+                else if (userParty[i] == userParty[q]) {
+                    multParty.push(i);
+                }
+            }
+
+            for (i = 0; i < multParty.length; i++) {
+                if (multParty[i] == 0) {
+                    console.log("S");
+                }
+                else if (multParty[i] == 1) {
+                    console.log("M");
+                }
+                else if (multParty[i] == 2) {
+                    console.log("SD");
+                }
+                else if (multParty[i] == 3) {
+                    console.log("MP");
+                }
+                else if (multParty[i] == 4) {
+                    console.log("C");
+                }
+                else if (multParty[i] == 5) {
+                    console.log("V");
+                }
+                else if (multParty[i] == 6) {
+                    console.log("L");
+                }
+                else if (multParty[i] == 7) {
+                    console.log("KD");
+                }
+
+            }
+
+            showresults(); //Show results
+        }
+
+        function showresults() {
+            document.getElementById("results").innerHTML = "<center><h2> Ditt resultat är: </h2> <br>";
+            document.getElementById("results1").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-S-small.jpg\" alt=\"Logo S\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[0]/nrofQ*100) + "\% </b> ";
+            document.getElementById("results2").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-M-small.jpg\" alt=\"Logo M\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[1] / nrofQ * 100) + "\% </b> ";
+            document.getElementById("results3").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-SD-small.jpg\" alt=\"Logo SD\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[2] / nrofQ * 100) + "\% </b> ";
+            document.getElementById("results4").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-MP-small.jpg\" alt=\"Logo MP\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[3] / nrofQ * 100) + "\% </b> ";
+            document.getElementById("results5").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-C-small.jpg\" alt=\"Logo C\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[4] / nrofQ * 100) + "\% </b> ";
+            document.getElementById("results6").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-V-small.jpg\" alt=\"Logo V\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[5] / nrofQ * 100) + "\% </b> ";
+            document.getElementById("results7").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-L-small.jpg\" alt=\"Logo L\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[6] / nrofQ * 100) + "\% </b> ";
+            document.getElementById("results8").innerHTML = "<img src=\"http://riksdagen.se/Views/Ui/images/logotyper-parti/small/logo-KD-small.jpg\" alt=\"Logo KD\" style=\"width:28px;height:28px;\"> <b>" + Math.floor(userParty[7] / nrofQ * 100) + "\% </b> ";
+            document.getElementById("results9").innerHTML = "</center>"
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+    </script>
+
+
+    <p id="results"></p>
+    <p id="results1"></p>
+    <p id="results2"></p>
+    <p id="results3"></p>
+    <p id="results4"></p>
+    <p id="results5"></p>
+    <p id="results6"></p>
+    <p id="results7"></p>
+    <p id="results8"></p>
+    <p id="results9"></p>
+
+
+</body>
+</html>
