@@ -1,0 +1,82 @@
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+
+<input type="file" id="input">
+<button id="ja" class="btn" data-val="1" style="background-color: greenyellow">Ja</button>
+<button id="nej" class="btn" data-val="0" style="background-color: #ff3f21">Nej</button>
+<script>
+
+	$.ajaxPrefilter( function (options) {
+		if (options.crossDomain && jQuery.support.cors) {
+			var http = (window.location.protocol === 'http:' ? 'http:' : 'https:');
+			options.url = http + '//cors-anywhere.herokuapp.com/' + options.url;
+			//options.url = "http://cors.corsproxy.io/url=" + options.url;
+		}
+	});
+
+	var eligible = [];
+	var result = [];
+    var index = 0;
+
+	$("#input").change(function ()
+	{
+        var file = this.files[0];
+        $(this).hide();
+        var reader = new FileReader();
+        reader.onload = function (e)
+        {
+            var json = JSON.parse(e.target.result);
+            console.log(json);
+	        var votering = json["Votering"];
+	        for (var i = 0; i < votering.length; i++)
+		        if(votering[i]["Point"] == 1)
+			        eligible.push(votering[i]);
+	        $.get('https://www.riksdagen.se/sv/global/sok/?q='+eligible[0]["DocumentCode"], function (response)
+	        {
+		        var cleaned = response.replace(/\/Views\/Ui\/images\/logo-x2\.png/g, '').replace(/\/Views\/Ui\/images\/logo-rdblue-x2\.png/g, '');
+		        var $link = $(cleaned).find(".link-arrow-right.link-type-new");
+		        var link = $link.attr("href");
+		        window.open("https://www.riksdagen.se" + link);
+	        });
+
+	        $(".btn").show();
+
+        };
+        reader.readAsText(file);
+	});
+
+	$(".btn").click(function ()
+	{
+		if ($(this).attr("data-val") == "1")
+		{
+			result.push(eligible[index]);
+		}
+		index++;
+		if (index < eligible.length)
+        {
+        	$.get('https://www.riksdagen.se/sv/global/sok/?q=' + eligible[index]["DocumentCode"], function (response)
+			{
+				var cleaned = response.replace(/\/Views\/Ui\/images\/logo-x2\.png/g, '').replace(/\/Views\/Ui\/images\/logo-rdblue-x2\.png/g, '');
+				var $link = $(cleaned).find(".link-arrow-right.link-type-new");
+				var link = $link.attr("href");
+				window.open("https://www.riksdagen.se" + link);
+			});
+    	}
+    	else
+        {
+        	$(".btn").hide();
+        	var out = {};
+        	out["Votering"] = result;
+        	$("body").append("<pre>" + JSON.stringify(out, undefined, 4) + "</pre>");
+        }
+	});
+
+    $(function ()
+     {
+	     $(".btn").hide();
+
+     });
+
+</script>
+</html>
